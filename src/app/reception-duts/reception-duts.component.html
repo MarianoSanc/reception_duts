@@ -1,0 +1,288 @@
+<div class="container-fluid" style="margin-top: 20px">
+  <div class="container">
+    <div class="row">
+      <div class="col-4">
+        <label for="phpc_asignado">Proyecto</label>
+        <ng-multiselect-dropdown
+          [settings]="dropdownSettings"
+          [data]="ph_pc"
+          [(ngModel)]="selectedItems"
+          (onSelect)="onProjectSelect($event)"
+          (onDeSelect)="onProjectDeSelect($event)"
+        ></ng-multiselect-dropdown>
+      </div>
+      <div class="col-4">
+        <label for="client_name" class="client-label">Cliente</label>
+
+        <input
+          type="text"
+          [(ngModel)]="client_name"
+          name="client_name"
+          class="form-control"
+        />
+      </div>
+      <div class="col-4">
+        <label for="quotation" class="client-label"
+          >No. cotización/pedido</label
+        >
+
+        <input
+          type="text"
+          [(ngModel)]="quotation"
+          name="quotation"
+          class="form-control"
+        />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-6"></div>
+      <div class="col-3">
+        <button
+          type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#agregarDUTModal"
+          class="btn btn-primary"
+          style="margin-top: 30px"
+          *ngIf="id_ph_pc != undefined"
+        >
+          Agregar DUT
+        </button>
+      </div>
+      <div class="col-3">
+        <button
+          (click)="generate()"
+          type="button"
+          class="btn btn-success"
+          style="margin-top: 30px"
+          *ngIf="id_ph_pc != undefined"
+        >
+          Exportar PDF
+        </button>
+      </div>
+    </div>
+    <div class="row" *ngIf="id_ph_pc != undefined">
+      <div class="col">
+        <div class="custom-table-container">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Nombre</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Numero de serie</th>
+                <th>Accesorios</th>
+                <th>Observaciones</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let dut of duts; index as i" [attr.class]="dut.class">
+                <td>{{ i + 1 }}</td>
+                <td>{{ dut.name }}</td>
+                <td>{{ dut.manufacturer }}</td>
+                <td>{{ dut.model }}</td>
+                <td>{{ dut.serial_number }}</td>
+                <td>{{ dut.accessories }}</td>
+                <td>{{ dut.comments }}</td>
+                <td>
+                  <button
+                    type="button"
+                    (click)="selectDUT(dut)"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editarDUTModal"
+                    class="btn btn-warning"
+                  >
+                    Editar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Agregar Componente -->
+<div class="modal fade" id="agregarDUTModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5">Agregar DUT</h1>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row mb-3">
+          <div class="col-6">
+            <label class="form-label">Nombre</label>
+            <input
+              type="text"
+              [(ngModel)]="componentName"
+              class="form-control"
+            />
+          </div>
+
+          <div class="col-6">
+            <label class="form-label">Marca</label>
+            <input
+              type="text"
+              [(ngModel)]="componentManufacturer"
+              class="form-control"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-6">
+            <label class="form-label">Modelo</label>
+            <input
+              type="text"
+              [(ngModel)]="componentModel"
+              class="form-control"
+            />
+          </div>
+
+          <div class="col-6">
+            <label class="form-label">Numero de serie</label>
+            <input
+              type="text"
+              [(ngModel)]="componentNoSerial"
+              class="form-control"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-6">
+            <label class="form-label">Accesorios</label>
+            <input
+              type="text"
+              [(ngModel)]="componentAccessories"
+              class="form-control"
+            />
+          </div>
+
+          <div class="col-6">
+            <label class="form-label">Observaciones</label>
+            <input
+              type="text"
+              [(ngModel)]="componentComments"
+              class="form-control"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          type="button"
+          (click)="addDUT()"
+          class="btn btn-primary"
+          data-bs-dismiss="modal"
+        >
+          Agregar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Componente -->
+<div class="modal fade" id="editarDUTModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5">Editar DUT</h1>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row mb-3">
+          <div class="col-6">
+            <label class="form-label">Nombre</label>
+            <input
+              type="text"
+              [(ngModel)]="componentName"
+              class="form-control"
+            />
+          </div>
+
+          <div class="col-6">
+            <label class="form-label">Marca</label>
+            <input
+              type="text"
+              [(ngModel)]="componentManufacturer"
+              class="form-control"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-6">
+            <label class="form-label">Modelo</label>
+            <input
+              type="text"
+              [(ngModel)]="componentModel"
+              class="form-control"
+            />
+          </div>
+
+          <div class="col-6">
+            <label class="form-label">Numero de serie</label>
+            <input
+              type="text"
+              [(ngModel)]="componentNoSerial"
+              class="form-control"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-6">
+            <label class="form-label">Accesorios</label>
+            <input
+              type="text"
+              [(ngModel)]="componentAccessories"
+              class="form-control"
+            />
+          </div>
+
+          <div class="col-6">
+            <label class="form-label">Observaciones</label>
+            <input
+              type="text"
+              [(ngModel)]="componentComments"
+              class="form-control"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          type="button"
+          (click)="editDUT()"
+          class="btn btn-primary"
+          data-bs-dismiss="modal"
+        >
+          Editar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
