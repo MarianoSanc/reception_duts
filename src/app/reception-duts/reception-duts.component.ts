@@ -52,6 +52,7 @@ export class ReceptionDutsComponent {
   componentNoSerial: any = '';
   componentAccessories: any = '';
   componentComments: any = '';
+  newAccessory: string = '';
 
   accessGranted: any = false;
 
@@ -126,6 +127,8 @@ export class ReceptionDutsComponent {
     let date = new Date();
     let month = date.getMonth() + 1;
 
+    const accessoriesString = this.componentAccessories.join(', ');
+
     let dataDut = {
       bd: 'factibilidad',
       action: 'create',
@@ -138,7 +141,7 @@ export class ReceptionDutsComponent {
           manufacturer: this.componentManufacturer,
           model: this.componentModel,
           serial_number: this.componentNoSerial,
-          accessories: this.componentAccessories,
+          accessories: accessoriesString,
           comments: this.componentComments,
           created_at:
             date.getFullYear() +
@@ -166,6 +169,7 @@ export class ReceptionDutsComponent {
         Swal.showLoading();
       },
     });
+
     this.backend.post(dataDut, UrlClass.URLNuevo).subscribe((response: any) => {
       if (response.result) {
         Swal.fire({
@@ -175,7 +179,8 @@ export class ReceptionDutsComponent {
           showConfirmButton: false,
           timer: 1500,
         });
-        this.componentNoSerial = '';
+        // Limpiar campos después de agregar
+        this.clearComponentFields();
       } else {
         Swal.fire({
           icon: 'error',
@@ -329,13 +334,44 @@ export class ReceptionDutsComponent {
     });
   }
 
+  addAccessory() {
+    if (this.newAccessory.trim() !== '') {
+      if (!this.componentAccessories) {
+        this.componentAccessories = [];
+      }
+      this.componentAccessories.push(this.newAccessory.trim());
+      this.newAccessory = '';
+    }
+  }
+
+  // Función para eliminar un accesorio de la lista
+  removeAccessory(index: number) {
+    this.componentAccessories.splice(index, 1);
+  }
+
+  clearComponentFields() {
+    this.componentId = undefined;
+    this.componentName = '';
+    this.componentManufacturer = '';
+    this.componentModel = '';
+    this.componentNoSerial = '';
+    this.componentAccessories = [];
+    this.componentComments = '';
+    this.newAccessory = '';
+  }
+
   selectDUT(dut: any) {
     this.componentId = dut.id;
     this.componentName = dut.name;
     this.componentManufacturer = dut.manufacturer;
     this.componentModel = dut.model;
     this.componentNoSerial = dut.serial_number;
-    this.componentAccessories = dut.accessories;
+
+    // Convertir string de accesorios a array
+    this.componentAccessories = dut.accessories
+      ? dut.accessories.split(',').map((item: string) => item.trim())
+      : [];
+
     this.componentComments = dut.comments;
   }
 
@@ -348,8 +384,12 @@ export class ReceptionDutsComponent {
       });
       return;
     }
+
     let date = new Date();
     let month = date.getMonth() + 1;
+
+    const accessoriesString = this.componentAccessories.join(', ');
+
     let dataDut = {
       bd: 'factibilidad',
       action: 'update',
@@ -361,7 +401,7 @@ export class ReceptionDutsComponent {
           manufacturer: this.componentManufacturer,
           model: this.componentModel,
           serial_number: this.componentNoSerial,
-          accessories: this.componentAccessories,
+          accessories: accessoriesString,
           comments: this.componentComments,
           modified_at:
             date.getFullYear() +
@@ -392,6 +432,7 @@ export class ReceptionDutsComponent {
         Swal.showLoading();
       },
     });
+
     this.backend.post(dataDut, UrlClass.URLNuevo).subscribe((response: any) => {
       if (response.result) {
         Swal.fire({
@@ -401,7 +442,8 @@ export class ReceptionDutsComponent {
           showConfirmButton: false,
           timer: 1500,
         });
-        this.componentNoSerial = '';
+        // Limpiar campos después de editar
+        this.clearComponentFields();
       } else {
         Swal.fire({
           icon: 'error',
@@ -422,6 +464,7 @@ export class ReceptionDutsComponent {
       });
       return;
     }
+
     let update = {
       bd: 'factibilidad',
       action: 'update',
@@ -435,6 +478,7 @@ export class ReceptionDutsComponent {
         },
       },
     };
+
     Swal.fire({
       showConfirmButton: false,
       title: 'Generando pdf',
@@ -447,7 +491,10 @@ export class ReceptionDutsComponent {
 
     this.backend.post(update, UrlClass.URLNuevo).subscribe((result: any) => {
       if (result.result) {
-        let data = { ph: this.id_ph_pc };
+        // Enviar solo el ID del proyecto al backend
+        let data = {
+          ph: this.id_ph_pc,
+        };
 
         this.backend.generate(data, UrlClass.URL).subscribe((response: any) => {
           if (response.file) {
@@ -458,11 +505,10 @@ export class ReceptionDutsComponent {
               showConfirmButton: false,
               timer: 1500,
             });
-            const link: any = document.createElement('a');
-            link.href = UrlClass.URL + response.file;
-            link.download = response.file;
-            link.click();
-            link.remove();
+
+            // Abrir el PDF en una nueva pestaña
+            const pdfUrl = UrlClass.URL + response.file;
+            window.open(pdfUrl, '_blank');
           } else {
             Swal.fire({
               icon: 'error',
@@ -479,5 +525,11 @@ export class ReceptionDutsComponent {
         });
       }
     });
+  }
+
+  parseAccessories(accessoriesString: string): string[] {
+    if (!accessoriesString) return [];
+
+    return accessoriesString.split(/,(?![^(]*\))/g).map((item) => item.trim());
   }
 }
